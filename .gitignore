@@ -1,0 +1,43 @@
+# ── Python / Django ────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Django specifics
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+.env
+
+# ── Node / React ────────────────────────────────────────────────
+node_modules/
+dist/
+.cache/
+*.local
+
+# ── Vite ───────────────────────────────────────────────────────
+hireflow-frontend/dist/
+
+# ── Editors ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docker ─────────────────────────────────────────────────────
+# (keep docker-compose.yml tracked, ignore override files)
+docker-compose.override.yml

@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: hireflow_db
+      POSTGRES_USER: hireflow_user
+      POSTGRES_PASSWORD: hireflow_password
+    ports:
+      - "5433:5432"
+
+  backend:
+    build: ./hireflow-backend
+    volumes:
+      - ./hireflow-backend:/app
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./hireflow-frontend
+    ports:
+      - "5173:5173"
