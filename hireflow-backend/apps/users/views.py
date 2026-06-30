@@ -3,6 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import NotFound
+from rest_framework import status
+
+import os
 
 from .models import User
 from .serializers import UserSerializer
@@ -51,3 +54,23 @@ class CandidateDetailView(APIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data)
+
+
+class AvatarView(APIView):
+    """
+    DELETE /api/users/me/avatar/
+    Clears the authenticated user's profile picture and deletes the file.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        if user.profile_picture:
+            # Delete the file from storage
+            file_path = user.profile_picture.path
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+            user.profile_picture = None
+            user.save(update_fields=["profile_picture"])
+        return Response(status=status.HTTP_204_NO_CONTENT)

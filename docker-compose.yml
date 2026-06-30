@@ -1,26 +1,58 @@
 services:
-  db:
-    image: postgres:17
-    environment:
-      POSTGRES_DB: hireflow_db
-      POSTGRES_USER: hireflow_user
-      POSTGRES_PASSWORD: hireflow_password
-    ports:
-      - "5433:5432"
 
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-hireflow_db}
+      POSTGRES_USER:     ${DB_USER:-hireflow_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hireflow_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"      # exposed on 5433 so it doesn't clash with a local pg
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hireflow_user} -d ${DB_NAME:-hireflow_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Django Backend ─────────────────────────────────────────────────────────
   backend:
     build: ./hireflow-backend
-    volumes:
-      - ./hireflow-backend:/app
-    working_dir: /app
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - PYTHONPATH=/app
+      DB_HOST: db          # service name — Docker DNS resolves this
+      DB_PORT: "5432"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
+    volumes:
+      - ./hireflow-backend:/app:z        # :z = SELinux shared relabel (Fedora)
+      - media_files:/app/media           # persist uploaded files
+    command: >-
+      sh -c "python manage.py migrate &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000"
 
+  # ── React Frontend ─────────────────────────────────────────────────────────
   frontend:
     build: ./hireflow-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    depends_on:
+      - backend
     ports:
       - "5173:5173"
+    volumes:
+      - ./hireflow-frontend:/app:z       # :z = SELinux shared relabel (Fedora)
+      - /app/node_modules
+
+volumes:
+  postgres_data:   # persistent DB data — survives container restarts
+  media_files:     # persistent uploaded files

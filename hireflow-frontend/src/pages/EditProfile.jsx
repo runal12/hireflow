@@ -77,6 +77,7 @@ export default function EditProfile() {
     // UI states
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [deletingAvatar, setDeletingAvatar] = useState(false);
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
@@ -127,6 +128,25 @@ export default function EditProfile() {
 
     function handleResumeChange(e) {
         setResume(e.target.files[0] || null);
+    }
+
+    async function handleDeleteAvatar() {
+        if (!window.confirm("Remove your profile picture? This cannot be undone.")) return;
+        setDeletingAvatar(true);
+        setSuccessMsg("");
+        setErrorMsg("");
+        try {
+            await client.delete("users/me/avatar/");
+            // Clear all local picture state
+            setExistingPictureUrl(null);
+            setProfilePicture(null);
+            setPicturePreview(null);
+            setSuccessMsg("Profile picture removed.");
+        } catch (err) {
+            setErrorMsg("Failed to remove profile picture.");
+        } finally {
+            setDeletingAvatar(false);
+        }
     }
 
     async function handleSubmit(e) {
@@ -237,13 +257,34 @@ export default function EditProfile() {
                                 <p className="text-sm text-slate-500 mb-3">
                                     Accepted formats: JPG, PNG, GIF, WebP (max 5 MB recommended)
                                 </p>
-                                <button
-                                    type="button"
-                                    onClick={() => pictureInputRef.current?.click()}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-primary-300 bg-primary-50 px-5 py-2.5 text-sm font-semibold text-primary-700 hover:bg-primary-100 transition"
-                                >
-                                    📁 {avatarSrc ? "Change Photo" : "Upload Photo"}
-                                </button>
+                                <div className="flex flex-wrap gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => pictureInputRef.current?.click()}
+                                        className="inline-flex items-center gap-2 rounded-xl border border-primary-300 bg-primary-50 px-5 py-2.5 text-sm font-semibold text-primary-700 hover:bg-primary-100 transition"
+                                    >
+                                        📁 {avatarSrc ? "Change Photo" : "Upload Photo"}
+                                    </button>
+
+                                    {/* Remove button — only when there's an existing or previewed photo */}
+                                    {avatarSrc && (
+                                        <button
+                                            type="button"
+                                            onClick={handleDeleteAvatar}
+                                            disabled={deletingAvatar}
+                                            className="inline-flex items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                                        >
+                                            {deletingAvatar ? (
+                                                <>
+                                                    <span className="inline-block w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                                                    Removing...
+                                                </>
+                                            ) : (
+                                                "🗑️ Remove Photo"
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
                                 {profilePicture && (
                                     <p className="mt-2 text-xs text-slate-500 truncate">
                                         Selected: {profilePicture.name}
