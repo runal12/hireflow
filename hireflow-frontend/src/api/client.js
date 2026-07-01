@@ -1,13 +1,14 @@
 import axios from "axios";
 
-const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api/",
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
-client.interceptors.request.use((config) => {
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access");
 
   if (token) {
@@ -17,4 +18,4 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-export default client;
+export default api;

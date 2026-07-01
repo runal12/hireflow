@@ -20,7 +20,11 @@
  * @param {string|null|undefined} url - Raw value from the API
  * @returns {string|null}            - Absolute URL or null if no file
  */
-const DJANGO_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+// Derive the bare Django origin from VITE_API_URL (strip trailing /api/ or /api).
+// e.g. "http://127.0.0.1:8000/api/" → "http://127.0.0.1:8000"
+//      "https://hireflow-backend-q8eh.onrender.com/api/" → "https://hireflow-backend-q8eh.onrender.com"
+const DJANGO_BASE_URL = (import.meta.env.VITE_API_URL || "")
+  .replace(/\/api\/?$/, "");
 
 export function mediaUrl(url) {
     if (!url) return null;
