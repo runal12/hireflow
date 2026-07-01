@@ -20,7 +20,7 @@ export default function EditJob() {
                 const data = await getJob(id);
                 setTitle(data.title || "");
                 setCompany(data.company || "");
-                setLocation(data.location || "");
+                setLocation(data.city || "");
                 setDescription(data.description || "");
                 setEmploymentType(data.employment_type || "FULL_TIME");
                 setSalaryMin(data.salary_min || "");
@@ -39,10 +39,13 @@ export default function EditJob() {
         setLoading(true);
         try {
             await updateJob(id, {
-                title, description, location,
+                title,
+                company,
+                description,
+                city: location,
                 employment_type: employmentType,
-                salary_min: salaryMin,
-                salary_max: salaryMax,
+                salary_min: salaryMin !== "" ? Number(salaryMin) : 0,
+                salary_max: salaryMax !== "" ? Number(salaryMax) : 0,
                 is_active: true,
             });
             alert("Job updated successfully!");
@@ -83,7 +86,7 @@ export default function EditJob() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
-                        <input placeholder="e.g. Bangalore, Remote" value={location} onChange={(e) => setLocation(e.target.value)} className={inputClass} />
+                        <input placeholder="e.g. Bangalore, Remote" value={location} onChange={(e) => setLocation(e.target.value)} required className={inputClass} />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Employment Type</label>
@@ -97,11 +100,11 @@ export default function EditJob() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Min Salary</label>
-                            <input type="number" placeholder="e.g. 500000" value={salaryMin} onChange={(e) => setSalaryMin(e.target.value)} className={inputClass} />
+                            <input type="number" placeholder="e.g. 500000" value={salaryMin} onChange={(e) => setSalaryMin(e.target.value)} min="0" max="9999999999" className={inputClass} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Max Salary</label>
-                            <input type="number" placeholder="e.g. 1200000" value={salaryMax} onChange={(e) => setSalaryMax(e.target.value)} className={inputClass} />
+                            <input type="number" placeholder="e.g. 1200000" value={salaryMax} onChange={(e) => setSalaryMax(e.target.value)} min="0" max="9999999999" className={inputClass} />
                         </div>
                     </div>
                     <div>
