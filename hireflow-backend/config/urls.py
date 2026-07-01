@@ -31,7 +31,10 @@ urlpatterns = [
     path("api/users/", include("apps.users.urls")),
 ]
 
-urlpatterns += static(
-    settings.MEDIA_URL,
-    document_root=settings.MEDIA_ROOT
-)
+# Serve media files only in development (DEBUG=True).
+# In production on Render, files are ephemeral — use Cloudinary or S3 for uploads.
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )
