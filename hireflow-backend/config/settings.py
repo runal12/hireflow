@@ -96,45 +96,41 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #   2. Individual DB_* env vars (explicit Supabase credentials)
 #   3. SQLite fallback       (local development only)
 
-_database_url = os.getenv('DATABASE_URL')
+
+_database_url = os.getenv("DATABASE_URL")
 
 if _database_url:
-    # Use DATABASE_URL directly (Render / Supabase connection string)
+    # Render / Supabase
     DATABASES = {
-        'default': dj_database_url.parse(
-            _database_url,
+        "default": dj_database_url.config(
+            default=_database_url,
             conn_max_age=600,
             conn_health_checks=True,
+            ssl_require=True,
         )
     }
-elif os.getenv('DB_NAME'):
-    # Explicit individual credentials — auto-detect Supabase vs local Docker
-    _db_host = os.getenv('DB_HOST', 'localhost')
-    # Supabase requires SSL; local Docker postgres does not support it
-    _ssl_mode = 'require' if 'supabase.co' in _db_host else 'prefer'
+
+elif os.getenv("DB_NAME"):
+    # Local PostgreSQL (optional)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': _db_host,
-            'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 600,
-            'OPTIONS': {
-                'sslmode': _ssl_mode,  # 'require' for Supabase, 'prefer' for local
-            },
-        }
-    }
-else:
-    # SQLite fallback — local development without .env
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
         }
     }
 
+else:
+    # SQLite fallback
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

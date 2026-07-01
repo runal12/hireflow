@@ -7,7 +7,7 @@ set -o errexit   # Exit immediately on any error
 set -o pipefail  # Catch errors in pipes
 
 echo "── Step 1: Installing Python dependencies ──"
-pip install -r requirements.txt
+pip install -r requirements/base.txt
 
 echo "── Step 2: Collecting static files ──"
 python manage.py collectstatic --noinput
