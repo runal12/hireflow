@@ -108,18 +108,21 @@ if _database_url:
         )
     }
 elif os.getenv('DB_NAME'):
-    # Explicit individual credentials (Supabase separate vars)
+    # Explicit individual credentials — auto-detect Supabase vs local Docker
+    _db_host = os.getenv('DB_HOST', 'localhost')
+    # Supabase requires SSL; local Docker postgres does not support it
+    _ssl_mode = 'require' if 'supabase.co' in _db_host else 'prefer'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME'),
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'HOST': _db_host,
             'PORT': os.getenv('DB_PORT', '5432'),
             'CONN_MAX_AGE': 600,
             'OPTIONS': {
-                'sslmode': 'require',  # Required by Supabase
+                'sslmode': _ssl_mode,  # 'require' for Supabase, 'prefer' for local
             },
         }
     }
