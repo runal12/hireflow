@@ -26,12 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cyzr8qw58gy1cqty)a7ee#@4op(8-r(li%n4yzroo+5(1j(g$%'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-cyzr8qw58gy1cqty)a7ee#@4op(8-r(li%n4yzroo+5(1j(g$%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -59,6 +59,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -145,6 +146,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (uploads)
 MEDIA_URL = '/media/'
@@ -174,6 +177,5 @@ SIMPLE_JWT = {
 
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins.split(',')]
